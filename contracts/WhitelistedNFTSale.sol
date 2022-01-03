@@ -8,6 +8,15 @@ import "@openzeppelin/contracts/utils/math/Math.sol";
 import "./interfaces/IMeritMintableNFT.sol";
 
 contract WhitelistedNFTSale is AccessControlEnumerable {
+
+    error ZeroMintError();
+    error SaleNotStartedError();
+    error SaleEndedError();
+    error InsufficientETHError();
+    error MerkleProofVerificationError();
+    error OnlyMerkleRootSetterError();
+    error OnlyFundsClaimerError();
+
     using Math for uint256;
 
     bytes32 public constant MERKLE_ROOT_SETTER_ROLE = keccak256("MERKLE_ROOT_SETTER_ROLE");
@@ -29,12 +38,16 @@ contract WhitelistedNFTSale is AccessControlEnumerable {
     bytes32 public merkleRoot; //set to bytes32(type(uint256).max) to remove whitelist
 
     modifier onlyMerkleRootSetter {
-        require(hasRole(MERKLE_ROOT_SETTER_ROLE, msg.sender), "ERROR");
+        if(!hasRole(MERKLE_ROOT_SETTER_ROLE, msg.sender)) {
+            revert OnlyMerkleRootSetterError();
+        }
         _;
     }
 
     modifier onlyFundsClaimer {
-        require(hasRole(FUNDS_CLAIMER_ROLE, msg.sender), "ERROR");
+        if(!hasRole(FUNDS_CLAIMER_ROLE, msg.sender)) {
+            revert OnlyFundsClaimerError();
+        }
         _;
     }
 
@@ -71,28 +84,40 @@ contract WhitelistedNFTSale is AccessControlEnumerable {
     }
 
     function buy(uint256 _amount, address _receiver, bytes32[] calldata _proof) external payable {
-        require(startTime < block.timestamp, "SALE_NOT_STARTED");
-        require(endTime > block.timestamp, "SALE_ENDED");
+        if(startTime > block.timestamp) {
+            revert SaleNotStartedError();
+        }
+        if(endTime < block.timestamp) {
+            revert SaleEndedError();
+        }
 
         // mint max what's left or max mint per user
-        uint256 amount = _amount.min(saleCap - totalSold).min(capPerUser);
+        uint256 amount = _amount.min(saleCap - totalSold).min(capPerUser - userBought[msg.sender]);
 
-        require(amount > 0, "CANNOT_MINT_ZERO");
+        if(amount == 0) {
+            revert ZeroMintError();
+        }
         
         // TODO custom errors
         uint256 totalEthRequired = amount * price;
-        require(msg.value >= totalEthRequired, "PRICE_TOO_LOW");
+
+        if(totalEthRequired > msg.value) {
+            revert InsufficientETHError();
+        }
  
         // If merkle root is 0xfffff...ffffff whitelist check is skipped
         if(merkleRoot != bytes32(type(uint256).max)) {
             bytes32 leaf = keccak256(abi.encodePacked(msg.sender)); // we only check if an address is in the merkle tree;
-            require(MerkleProof.verify(_proof, merkleRoot, leaf), "MerkleNFTDrop.claim: Proof invalid");
+            if(!MerkleProof.verify(_proof, merkleRoot, leaf)) {
+                revert MerkleProofVerificationError();
+            }
         }        
 
         // reading totalSold once to save on storage writes
         uint256 nextId = totalSold + idOffset;
         // Updating totalSold before doing possible external calls
         totalSold += amount;
+        userBought[msg.sender] += amount;
 
         // External calls at the end of the function
         // mint NFTS
