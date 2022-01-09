@@ -20,15 +20,23 @@ contract MeritNFT is ERC721, AccessControlEnumerable, IMeritMintableNFT {
         _;
     }
 
+    /// @notice Constructor
+    /// @param _name The name of the NFT
+    /// @param _symbol Symbol aka ticker
+    /// @param _baseTokenURI Prepends the tokenId for the tokenURI
     constructor(
-        string memory name,
-        string memory symbol,
+        string memory _name,
+        string memory _symbol,
         string memory _baseTokenURI
-    ) ERC721(name, symbol) {
+    ) ERC721(_name, _symbol) {
         baseTokenURI = _baseTokenURI;
         _setupRole(DEFAULT_ADMIN_ROLE, _msgSender());
     }
 
+
+    /// @notice Mints an NFT. Can only be called by an address with the minter role and tokenId must be unique
+    /// @param _tokenId Id of the token
+    /// @param _receiver Address receiving the NFT
     function mint(uint256 _tokenId, address _receiver) external override onlyMinter {
         _mint(_receiver, _tokenId);
     }
@@ -37,6 +45,14 @@ contract MeritNFT is ERC721, AccessControlEnumerable, IMeritMintableNFT {
         return baseTokenURI;
     }
 
+    /// @notice returns the baseURI
+    /// @return The tokenURI
+    function baseURI() external view returns (string memory) {
+        return _baseURI();
+    }
+
+    /// @notice Signals support for a given interface
+    /// @param interfaceId 4bytes signature of the interface
     function supportsInterface(bytes4 interfaceId)
         public
         view

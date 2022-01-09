@@ -51,6 +51,16 @@ contract WhitelistedNFTSale is AccessControlEnumerable {
         _;
     }
 
+
+    /// @notice constructor
+    /// @param _merkleRoot merkle root
+    /// @param _startTime start time of the sale
+    /// @param _endTime end time of the sale
+    /// @param _NFT address of the nft contract
+    /// @param _saleCap maximum of nfts sold during the sale
+    /// @param _capPerUser maximum a single address can buy
+    /// @param _price price per nft
+    /// @param _idOffset offset from which to start the incrementing of token ids
     constructor(
         bytes32 _merkleRoot,
         uint256 _startTime,
@@ -74,15 +84,22 @@ contract WhitelistedNFTSale is AccessControlEnumerable {
         _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
     }
 
-
+    /// @notice Set the merkle root. Can only be called by a merkle root setter
+    /// @param _merkleRoot new merkleRoot
     function setMerkleRoot(bytes32 _merkleRoot) external onlyMerkleRootSetter {
         merkleRoot = _merkleRoot;
     }
 
+    /// @notice Claim funds received from the sale
+    /// @param _receiver address receiving the funds
     function claimFunds(address _receiver) external onlyFundsClaimer() {
         payable(_receiver).transfer(address(this).balance);
     }
 
+    /// @notice Buy an NFT
+    /// @param _amount amount of nfts to buy
+    /// @param _receiver address receiving the bought nfts
+    /// @param _proof merkle proof confirming inclusion in the whitelist
     function buy(uint256 _amount, address _receiver, bytes32[] calldata _proof) external payable {
         if(startTime > block.timestamp) {
             revert SaleNotStartedError();

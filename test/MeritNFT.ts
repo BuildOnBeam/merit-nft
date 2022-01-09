@@ -42,6 +42,9 @@ describe("MeritNFT", function() {
         DEFAULT_ADMIN_ROLE = await NFT.DEFAULT_ADMIN_ROLE();
         MINTER_ROLE = await NFT.MINTER_ROLE();
 
+        console.log("DEFAULT_ADMIN_ROLE", DEFAULT_ADMIN_ROLE);
+        console.log("MINTER_ROLE", MINTER_ROLE);
+
         await timeTraveler.snapshot();
     });
 
