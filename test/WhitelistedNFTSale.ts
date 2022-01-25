@@ -88,6 +88,94 @@ describe("WhiteListedNFTSale", function() {
 
     beforeEach(async() => {
         await timeTraveler.revertSnapshot();
+    });  
+
+
+    describe("constructor", async() => {
+        it("_startTime > _endTime should revert", async() => {
+            await expect(
+                (new WhitelistedNFTSale__factory(deployer)).deploy(
+                    constants.MaxUint256.toHexString(),
+                    200,
+                    100,
+                    NFT.address,
+                    SALE_CAP,
+                    USER_CAP,
+                    PRICE,
+                    ID_OFFSET
+                )
+            ).to.be.revertedWith(`ConstructorParamError("_startTime > _endTime")`);
+        });
+        it("_endTime < block.timestamp should revert", async() => {
+            await expect(
+                (new WhitelistedNFTSale__factory(deployer)).deploy(
+                    constants.MaxUint256.toHexString(),
+                    100,
+                    200,
+                    NFT.address,
+                    SALE_CAP,
+                    USER_CAP,
+                    PRICE,
+                    ID_OFFSET
+                )
+            ).to.be.revertedWith(`ConstructorParamError("_endTime < block.timestamp")`);
+        });
+        it("_NFT == address(0) should revert", async() => {
+            await expect(
+                (new WhitelistedNFTSale__factory(deployer)).deploy(
+                    constants.MaxUint256.toHexString(),
+                    saleStart,
+                    saleEnd,
+                    constants.AddressZero,
+                    SALE_CAP,
+                    USER_CAP,
+                    PRICE,
+                    ID_OFFSET
+                )
+            ).to.be.revertedWith(`ConstructorParamError("_NFT == address(0)")`);
+        });
+        it("_saleCap == 0 should revert", async() => {
+            await expect(
+                (new WhitelistedNFTSale__factory(deployer)).deploy(
+                    constants.MaxUint256.toHexString(),
+                    saleStart,
+                    saleEnd,
+                    NFT.address,
+                    0,
+                    USER_CAP,
+                    PRICE,
+                    ID_OFFSET
+                )
+            ).to.be.revertedWith(`ConstructorParamError("_saleCap == 0")`);
+        });
+        it("_capPerUser == 0 should revert", async() => {
+            await expect(
+                (new WhitelistedNFTSale__factory(deployer)).deploy(
+                    constants.MaxUint256.toHexString(),
+                    saleStart,
+                    saleEnd,
+                    NFT.address,
+                    SALE_CAP,
+                    0,
+                    PRICE,
+                    ID_OFFSET
+                )
+            ).to.be.revertedWith(`ConstructorParamError("_capPerUser == 0")`);
+        });
+        it("_price == 0 should revert", async() => {
+            await expect(
+                (new WhitelistedNFTSale__factory(deployer)).deploy(
+                    constants.MaxUint256.toHexString(),
+                    saleStart,
+                    saleEnd,
+                    NFT.address,
+                    SALE_CAP,
+                    USER_CAP,
+                    0,
+                    ID_OFFSET
+                )
+            ).to.be.revertedWith(`ConstructorParamError("_price == 0")`);
+        });
     });
 
     describe("buy", async() => {
@@ -171,7 +259,7 @@ describe("WhiteListedNFTSale", function() {
                 merkleRoot,
                 saleStart + 3600,
                 // @ts-ignore
-                saleEnd,
+                saleEnd + 3600,
                 NFT.address,
                 SALE_CAP,
                 USER_CAP,

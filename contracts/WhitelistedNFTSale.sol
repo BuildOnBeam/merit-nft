@@ -16,6 +16,7 @@ contract WhitelistedNFTSale is AccessControlEnumerable {
     error MerkleProofVerificationError();
     error OnlyMerkleRootSetterError();
     error OnlyFundsClaimerError();
+    error ConstructorParamError(string param);
 
     using Math for uint256;
 
@@ -72,6 +73,25 @@ contract WhitelistedNFTSale is AccessControlEnumerable {
         uint256 _idOffset
         
     ) {
+        if(_startTime > _endTime) {
+            revert ConstructorParamError("_startTime > _endTime");
+        }
+        if(_endTime < block.timestamp) {
+            revert ConstructorParamError("_endTime < block.timestamp");
+        }
+        if(_NFT == address(0)) {
+            revert ConstructorParamError("_NFT == address(0)");
+        }
+        if(_saleCap == 0) {
+            revert ConstructorParamError("_saleCap == 0");
+        }
+        if(_capPerUser == 0) {
+            revert ConstructorParamError("_capPerUser == 0");
+        }
+        if(_price == 0) {
+            revert ConstructorParamError("_price == 0");
+        }
+
         merkleRoot = _merkleRoot;
         startTime = _startTime;
         endTime = _endTime;
