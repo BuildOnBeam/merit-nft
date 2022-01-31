@@ -29,6 +29,7 @@ task("deploy-factory")
 
 task("deploy-sale")
     .addParam("merkleRoot")
+    .addParam("startTime")
     .addParam("endTime")
     .addParam("nft")
     .addParam("saleCap")
@@ -40,7 +41,6 @@ task("deploy-sale")
         const signers = await ethers.getSigners();
         const saleFactory = new WhitelistedNFTSale__factory(signers[0]);
         const price = utils.parseEther(taskArgs.price);
-
         const sale = await saleFactory.deploy(
             taskArgs.merkleRoot,
             taskArgs.startTime,
@@ -49,12 +49,12 @@ task("deploy-sale")
             taskArgs.saleCap,
             taskArgs.capPerUser,
             price,
-            taskArgs.idOffSet
+            taskArgs.idOffset
         );
         console.log(`Sale deployed at: ${sale.address}`);
 
         if(taskArgs.verify) {
-            console.log("Verifying MeritNFTDropFactory__factory, can take some time")
+            console.log("Verifying sale, can take some time")
             await sale.deployed();
             await sleep(VERIFY_DELAY);
             await run("verify:verify", {
@@ -67,7 +67,7 @@ task("deploy-sale")
                     taskArgs.saleCap,
                     taskArgs.capPerUser,
                     price,
-                    taskArgs.idOffSet
+                    taskArgs.idOffset
                 ]
             });
         }
