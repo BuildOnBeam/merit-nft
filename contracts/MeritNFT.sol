@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.9;
 
-import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 import "@openzeppelin/contracts/access/AccessControlEnumerable.sol";
 
 import "./interfaces/IMeritMintableNFT.sol";
 
-contract MeritNFT is ERC721, AccessControlEnumerable, IMeritMintableNFT {
+contract MeritNFT is ERC721Enumerable, AccessControlEnumerable, IMeritMintableNFT {
 
     error OnlyMinterError();
     error OnlyAdminError();
@@ -71,7 +71,7 @@ contract MeritNFT is ERC721, AccessControlEnumerable, IMeritMintableNFT {
         public
         view
         virtual
-        override(AccessControlEnumerable, ERC721)
+        override(AccessControlEnumerable, ERC721Enumerable)
         returns (bool)
     {
         return super.supportsInterface(interfaceId);
