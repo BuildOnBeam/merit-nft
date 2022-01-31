@@ -9,6 +9,7 @@ import "./interfaces/IMeritMintableNFT.sol";
 contract MeritNFT is ERC721, AccessControlEnumerable, IMeritMintableNFT {
 
     error OnlyMinterError();
+    error OnlyAdminError();
 
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
     string internal baseTokenURI;
@@ -16,6 +17,13 @@ contract MeritNFT is ERC721, AccessControlEnumerable, IMeritMintableNFT {
     modifier onlyMinter {
         if(!hasRole(MINTER_ROLE, msg.sender)) {
             revert OnlyMinterError();
+        }
+        _;
+    }
+
+    modifier onlyAdmin {
+        if(!hasRole(DEFAULT_ADMIN_ROLE, msg.sender)) {
+            revert OnlyAdminError();
         }
         _;
     }
@@ -39,6 +47,12 @@ contract MeritNFT is ERC721, AccessControlEnumerable, IMeritMintableNFT {
     /// @param _receiver Address receiving the NFT
     function mint(uint256 _tokenId, address _receiver) external override onlyMinter {
         _mint(_receiver, _tokenId);
+    }
+
+    /// @notice Sets the base token URI. Can only be called by an address with the default admin role
+    /// @param _newBaseURI New baseURI
+    function setBaseURI(string memory _newBaseURI) external onlyAdmin {
+        baseTokenURI = _newBaseURI;
     }
 
     function _baseURI() internal view virtual override returns (string memory) {
