@@ -113,18 +113,4 @@ describe("MeritNFT", function() {
         });
     });
 
-    describe("setURIFileExtension", async() => {
-        it("Setting the URI fileExtension should work", async() => {
-            const baseURI = "69nice";
-            await NFT.setBaseURI(baseURI);
-
-            const newBaseURI = await NFT.baseURI();
-            expect(newBaseURI).to.eq(baseURI);
-        });
-
-        it("Setting the BaseURI from an address which does not have the default admin role should fail", async() => {
-            await expect(NFT.connect(account1).setBaseURI("fail")).to.be.revertedWith("OnlyAdminError()");
-        });
-    });
-
 });
