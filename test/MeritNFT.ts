@@ -69,7 +69,7 @@ describe("MeritNFT", function() {
             expect(symbol).to.eq(SYMBOL, "Symbol incorrect");
             expect(defaultAdminCount).to.eq(1, "Default admin cound incorrect");
             expect(defaultAdmin).to.eq(deployer.address, "Default admin incorrect");
-            expect(tokenUri).to.eq(`${BASE_TOKEN_URI}0`, "TokenURI incorrect");
+            expect(tokenUri).to.eq(`${BASE_TOKEN_URI}0.json`, "TokenURI incorrect");
         });
     });
 
@@ -101,6 +101,20 @@ describe("MeritNFT", function() {
 
     describe("setBaseURI", async() => {
         it("Setting the baseURI should work", async() => {
+            const baseURI = "69nice";
+            await NFT.setBaseURI(baseURI);
+
+            const newBaseURI = await NFT.baseURI();
+            expect(newBaseURI).to.eq(baseURI);
+        });
+
+        it("Setting the BaseURI from an address which does not have the default admin role should fail", async() => {
+            await expect(NFT.connect(account1).setBaseURI("fail")).to.be.revertedWith("OnlyAdminError()");
+        });
+    });
+
+    describe("setURIFileExtension", async() => {
+        it("Setting the URI fileExtension should work", async() => {
             const baseURI = "69nice";
             await NFT.setBaseURI(baseURI);
 

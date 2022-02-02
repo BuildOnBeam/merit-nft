@@ -3,10 +3,12 @@ pragma solidity 0.8.9;
 
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 import "@openzeppelin/contracts/access/AccessControlEnumerable.sol";
+import "@openzeppelin/contracts/utils/Strings.sol";
 
 import "./interfaces/IMeritMintableNFT.sol";
 
 contract MeritNFT is ERC721Enumerable, AccessControlEnumerable, IMeritMintableNFT {
+    using Strings for uint256;
 
     error OnlyMinterError();
     error OnlyAdminError();
@@ -75,5 +77,15 @@ contract MeritNFT is ERC721Enumerable, AccessControlEnumerable, IMeritMintableNF
         returns (bool)
     {
         return super.supportsInterface(interfaceId);
+    }
+
+    /**
+     * @dev See {IERC721Metadata-tokenURI}.
+     */
+    function tokenURI(uint256 tokenId) public view virtual override returns (string memory) {
+        require(_exists(tokenId), "ERC721Metadata: URI query for nonexistent token");
+
+        string memory baseURI = _baseURI();
+        return bytes(baseURI).length > 0 ? string(abi.encodePacked(baseURI, tokenId.toString(), ".json")) : "";
     }
 }
