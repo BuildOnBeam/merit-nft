@@ -1,6 +1,6 @@
 import { utils } from "ethers";
 import { task } from "hardhat/config";
-import { MeritNFTDropFactory__factory, MeritNFT__factory, WhitelistedNFTSale__factory } from "../../src/types";
+import { MeritNFTDropFactory__factory, MeritNFT__factory, View__factory, WhitelistedNFTSale__factory } from "../../src/types";
 import sleep from "../../utils/sleep";
 
 const VERIFY_DELAY = 100000;
@@ -73,6 +73,28 @@ task("deploy-sale")
         }
 })
 
+task("deploy-view")
+    .addFlag("verify")
+    .setAction(async(taskArgs, { ethers, run}) => {
+        const signers = await ethers.getSigners();
+        const viewFactory = new View__factory(signers[0]);
+        const view = await viewFactory.deploy();
+
+        console.log(`View deployed at: ${view.address}`);
+
+        if(taskArgs.verify) {
+            console.log("Verifying View, can take some time");
+            await view.deployed();
+            await sleep(VERIFY_DELAY);
+            await run("verify:verify", {
+                address: view.address,
+                constructorArguments: [
+                    // none
+                ]
+            });
+        }
+});
+
 task("verify-nft")
     .addParam("nft")
     .setAction(async(taskArgs, { ethers, run}) => {
@@ -93,5 +115,4 @@ task("verify-nft")
                 baseTokenURI
             ]
         });
-
 });
